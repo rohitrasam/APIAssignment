@@ -1,15 +1,11 @@
+using EmployeeAPI.IService;
+using EmployeeAPI.Service;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace EmployeeAPI
 {
@@ -26,6 +22,13 @@ namespace EmployeeAPI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddHttpClient();
+            services.AddDbContext<EmployeeContext>(options =>
+            {
+                options.UseSqlServer(Configuration["DbConnection"]);
+            });
+
+            services.AddScoped<IEmployeeService, EmployeeService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -39,7 +42,7 @@ namespace EmployeeAPI
             app.UseHttpsRedirection();
 
             app.UseRouting();
-
+            app.UseCors("CORS Policy");
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
