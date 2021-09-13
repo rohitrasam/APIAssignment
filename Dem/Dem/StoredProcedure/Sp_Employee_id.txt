@@ -1,0 +1,18 @@
+﻿USE [Rohit]
+GO
+
+/****** Object:  StoredProcedure [dbo].[Sp_Employee_id]    Script Date: 9/13/2021 6:11:25 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROC [dbo].[Sp_Employee_id]
+@Emp_id int
+AS
+BEGIN
+Select * FROM Employees WHERE Id = @Emp_id
+END
+GO
+

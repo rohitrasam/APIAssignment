@@ -1,0 +1,22 @@
+﻿USE [Rohit]
+GO
+
+/****** Object:  StoredProcedure [dbo].[Sp_employee_Add]    Script Date: 9/13/2021 6:09:18 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROC [dbo].[Sp_employee_Add]
+@Name nvarchar(max),
+@Age int,
+@Salary decimal(10, 2),
+@Emp_id int out
+AS
+BEGIN
+INSERT INTO Employees(Name, Age, Salary) values(@Name, @Age, @Salary) set @Emp_id = SCOPE_IDENTITY()
+return @Emp_id;
+END
+GO
+

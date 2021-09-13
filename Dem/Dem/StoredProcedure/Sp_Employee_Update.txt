@@ -1,0 +1,21 @@
+﻿USE [Rohit]
+GO
+
+/****** Object:  StoredProcedure [dbo].[Sp_employee_Update]    Script Date: 9/13/2021 6:11:49 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROC [dbo].[Sp_employee_Update]
+@Emp_id int,
+@Name nvarchar(max),
+@Age int,
+@Salary decimal(10, 2)
+AS
+BEGIN
+UPDATE Employees SET Name = @Name, Age=@Age, Salary=@Salary WHERE Id = @Emp_id
+END
+GO
+
