@@ -74,24 +74,48 @@ namespace EmployeeAPIAssignment2
         {
 
             List<Employee> employees = new List<Employee>();
-            SqlConnection con = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-            SqlCommand cmd = new SqlCommand("Sp_Employee_All", con);
-            cmd.CommandType = CommandType.StoredProcedure;
-            SqlDataAdapter dr = new SqlDataAdapter(cmd);
-            DataTable dt = new DataTable();
-            dr.Fill(dt);
-
-            for (int i = 0; i < dt.Rows.Count; i++)
+            
+            using(SqlConnection con = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
             {
-                Employee employee = new Employee
+                con.Open();
+                SqlCommand cmd = new SqlCommand("Sp_Employee_All", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                using SqlDataReader dr = cmd.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Columns.Add("Id");
+                dt.Columns.Add("Name");
+                dt.Columns.Add("Age");
+                dt.Columns.Add("Salary");
+
+                while (dr.Read())
                 {
-                    Id = (int)dt.Rows[i]["Id"],
-                    Name = dt.Rows[i]["Name"].ToString(),
-                    Age = (int)dt.Rows[i]["Age"],
-                    Salary = (decimal)dt.Rows[i]["Salary"]
-                };
-                employees.Add(employee);
+                    DataRow dataRow = dt.NewRow();
+                    Employee employee = new Employee
+                    {
+                        Id = Convert.ToInt32(dr["Id"]),
+                        Name = dr["Name"].ToString(),
+                        Age = (int)dr["Age"],
+                        Salary = (decimal)dr["Salary"]
+                    };
+                    employees.Add(employee);
+
+                }
             }
+            
+            
+           
+
+            //for (int i = 0; i < dt.Rows.Count; i++)
+            //{
+            //    Employee employee = new Employee
+            //    {
+            //        Id = (int)dt.Rows[i]["Id"],
+            //        Name = dt.Rows[i]["Name"].ToString(),
+            //        Age = (int)dt.Rows[i]["Age"],
+            //        Salary = (decimal)dt.Rows[i]["Salary"]
+            //    };
+            //    employees.Add(employee);
+            //}
             return employees;
         }
 
