@@ -20,52 +20,57 @@ namespace EmployeeAPIAssignment2
         
         public Employee AddEmployee(Employee employee)
         {
-            SqlConnection con = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-            SqlCommand cmd = new SqlCommand("Sp_Employee_Add", con);
-            cmd.CommandType = CommandType.StoredProcedure;
-            cmd.Parameters.AddWithValue("@Name", employee.Name);
-            cmd.Parameters.AddWithValue("@Age", employee.Age);
-            cmd.Parameters.AddWithValue("@Salary", employee.Salary);
-            cmd.Parameters.Add("@Emp_id", SqlDbType.Int).Direction = ParameterDirection.Output;
-            
-            con.Open();
-            cmd.ExecuteNonQuery();
-            con.Dispose();
-            employee.Id = (int)cmd.Parameters["@Emp_id"].Value;
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                con.Open();
+                SqlCommand cmd = new SqlCommand("Sp_Employee_Add", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@Name", employee.Name);
+                cmd.Parameters.AddWithValue("@Age", employee.Age);
+                cmd.Parameters.AddWithValue("@Salary", (decimal)employee.Salary);
+                cmd.Parameters.Add("@Emp_id", SqlDbType.Int).Direction = ParameterDirection.Output;
+                
+                cmd.ExecuteNonQuery();
+                employee.Id = (int)cmd.Parameters["@Emp_id"].Value;
 
+
+            }
             return employee;
         }
 
         public Employee DeleteEmployee(int id)
         {
             Employee employee = GetEmployeeById(id);
-            SqlConnection con = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-            SqlCommand cmd = new SqlCommand("Sp_employee_Delete", con);
-            cmd.CommandType = CommandType.StoredProcedure;
-            cmd.Parameters.AddWithValue("Emp_id", id);
-            con.Open();
-            cmd.ExecuteNonQuery();
-            con.Dispose();
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                SqlCommand cmd = new SqlCommand("Sp_employee_Delete", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("Emp_id", id);
+                cmd.ExecuteNonQuery();
+
+            }
 
             return employee;
         }
 
         public Employee GetEmployeeById(int id)
         {
-            SqlConnection con = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-            SqlCommand cmd = new SqlCommand("Sp_Employee_id", con);
-            cmd.CommandType = CommandType.StoredProcedure;
-            cmd.Parameters.AddWithValue("@Emp_id", id);
-            SqlDataAdapter da = new SqlDataAdapter(cmd);
-            DataTable dt = new DataTable();
-            da.Fill(dt);
-            Employee employee = new Employee
+            Employee employee = new Employee();
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
             {
-                Id = (int)dt.Rows[0]["Id"],
-                Name = dt.Rows[0]["Name"].ToString(),
-                Age = (int)dt.Rows[0]["Age"],
-                Salary = (decimal)dt.Rows[0]["Salary"]
-            };
+                con.Open();
+                SqlCommand cmd = new SqlCommand("Sp_Employee_id", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@Emp_id", id);
+                using SqlDataReader dr = cmd.ExecuteReader();
+                while (dr.Read())
+                {
+                    employee.Id = (int)dr["Id"];
+                    employee.Name = dr["Name"].ToString();
+                    employee.Age = (int)dr["Age"];
+                    employee.Salary = (decimal)dr["Salary"];
+                }
+            }
 
             return employee;
         }
@@ -74,41 +79,43 @@ namespace EmployeeAPIAssignment2
         {
 
             List<Employee> employees = new List<Employee>();
-            SqlConnection con = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-            SqlCommand cmd = new SqlCommand("Sp_Employee_All", con);
-            cmd.CommandType = CommandType.StoredProcedure;
-            SqlDataAdapter dr = new SqlDataAdapter(cmd);
-            DataTable dt = new DataTable();
-            dr.Fill(dt);
-
-            for (int i = 0; i < dt.Rows.Count; i++)
+            
+            using(SqlConnection con = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
             {
-                Employee employee = new Employee
+                con.Open();
+                SqlCommand cmd = new SqlCommand("Sp_Employee_All", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                using SqlDataReader dr = cmd.ExecuteReader();
+
+                while (dr.Read())
                 {
-                    Id = (int)dt.Rows[i]["Id"],
-                    Name = dt.Rows[i]["Name"].ToString(),
-                    Age = (int)dt.Rows[i]["Age"],
-                    Salary = (decimal)dt.Rows[i]["Salary"]
-                };
-                employees.Add(employee);
+                    Employee employee = new Employee
+                    {
+                        Id = Convert.ToInt32(dr["Id"]),
+                        Name = dr["Name"].ToString(),
+                        Age = (int)dr["Age"],
+                        Salary = (decimal)dr["Salary"]
+                    };
+                    employees.Add(employee);
+                }
             }
             return employees;
         }
 
         public Employee UpdateEmployee(Employee employee)
         {
-            SqlConnection con = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-            SqlCommand cmd = new SqlCommand("Sp_employee_Update", con);
-            cmd.CommandType = CommandType.StoredProcedure;
-            cmd.Parameters.AddWithValue("@Emp_id", employee.Id);
-            cmd.Parameters.AddWithValue("@Name", employee.Name);
-            cmd.Parameters.AddWithValue("@Age", employee.Age);
-            cmd.Parameters.AddWithValue("@Salary", employee.Salary);
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                con.Open();
+                SqlCommand cmd = new SqlCommand("Sp_employee_Update", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@Emp_id", employee.Id);
+                cmd.Parameters.AddWithValue("@Name", employee.Name);
+                cmd.Parameters.AddWithValue("@Age", employee.Age);
+                cmd.Parameters.AddWithValue("@Salary", employee.Salary);
+                cmd.ExecuteNonQuery();
 
-            con.Open();
-            cmd.ExecuteNonQuery();
-            con.Dispose();
-
+            }
             return employee;
         }
     }
